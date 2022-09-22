@@ -1,6 +1,7 @@
 import random
 import time
 import csv
+import os
 
 locaties = ["Rotterdam", "Utrecht", "Den Haag"]
 
@@ -27,5 +28,7 @@ while True:
     writer.writerow(data)
     file.close()
     print("Bedankt voor uw feedback, we doen ons best om dagelijks te verbeteren, fijne dag!")
+    time.sleep(5)
+    os.system('CLS')
 
 
