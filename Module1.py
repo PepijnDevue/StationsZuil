@@ -1,13 +1,7 @@
-"""
-Maak een programma dat het volgende in een opnieuw blijft doen zolang het draait:
-1.	Vraag de gebruiker om zijn/haar naam en onthoud dat, als dit niet gedaan wordt maak de gebruiker dan anoniem
-2.	Kies een random stationslocatie uit een lijst van 3
-3.	Vraag de gebruiker om zijn/haar opmerking over het station en sla dat op
-4.	Onthoud de tijd en datum waarop deze opmerking gemaakt is
-5.	Sla deze gegevens bij elkaar op in een CSV
-"""
 import random
 import time
+import csv
+
 locaties = ["Rotterdam", "Utrecht", "Den Haag"]
 
 def opmerkingMaken():
@@ -27,6 +21,11 @@ while True:
         naam = "anoniem"
     opmerking = opmerkingMaken()
     datumTijd = time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime())
-
+    file = open('opmerkingen.csv', 'a')
+    writer = csv.writer(file)
+    data = [opmerking, datumTijd, naam, station]
+    writer.writerow(data)
+    file.close()
+    print("Bedankt voor uw feedback, we doen ons best om dagelijks te verbeteren, fijne dag!")
 
 
