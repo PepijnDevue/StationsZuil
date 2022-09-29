@@ -3,7 +3,7 @@ import time
 import csv
 import os
 
-locaties = ["Rotterdam", "Utrecht", "Den Haag"]
+locaties = ["Arnhem", "Utrecht", "Den Haag"]
 
 def opmerkingMaken():
     opmerking = input("Wat vind u van dit station? Max 140 karakters: ")
