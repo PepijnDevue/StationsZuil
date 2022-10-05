@@ -12,6 +12,7 @@
 import csv
 import os
 import time
+import psycopg2
 
 def goedkeuren():
     goedkeuring = input("Als het bericht goed wordt gekeurd, typ 'goedgekeurd', anders typ 'afgekeurd': ")
@@ -26,6 +27,21 @@ def goedkeuren():
 modNaam = input("Goedemiddag moderator van NS, wat is uw naam?: ")
 modMail = input("Wat is uw werkmail?: ")
 print("Dankuwel "+ modNaam + ", werkze!")
+connection = psycopg2.connect(user="postgres", password="dimPw78150", host="localhost", database="ProjectZuil")
+
+cursor = connection.cursor()
+
+query = "INSERT INTO moderator (mail, naam) VALUES (%s,%s)"
+#-------------------------------------------------------------------------------------------------------------------
+#Check of mod al in moderator zit
+#--------------------------------------------------------------------------------------------------------------
+data = (modMail, modNaam)
+cursor.execute(query, data)
+
+connection.commit()
+
+cursor.close()
+connection.close()
 time.sleep(3)
 os.system("CLS")
 
@@ -44,15 +60,26 @@ for i in data:
         else:
             goedgekeurd = False
             print("\nU heeft het bericht afgekeurd")
-        newData = i
-        newData.append(goedgekeurd)
-        newData.append(time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime()))
-        newData.append(modNaam)
-        newData.append(modMail)
+        #-------------------------------------------------------------------------------------------------------------
+        #Opmerkingnr ophalen?
+        #-------------------------------------------------------------------------------------------------------------
+        opmerkingnr = "?????"
+        newData = (opmerkingnr, i[0], i[1], i[2], i[3], goedgekeurd, time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime()), modMail)
+        #newData(opmerkingnr, opmerking, datumtijd, gebruikersnaam, station, goedgekeurd, keurdatumtijd, mail)
         print(newData)
-        #-------------------------------------------------------------------------------
-        #Voeg data toe aan PostgreSQL
-        #-------------------------------------------------------------------------------
+
+        connection = psycopg2.connect(user="postgres", password="dimPw78150", host="localhost", database="ProjectZuil")
+
+        cursor = connection.cursor()
+
+        query = "INSERT INTO opmerking (opmerkingnr, opmerking, datumtijd, gebruikersnaam, station, goedgekeurd, keurdatumtijd, mail) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+        cursor.execute(query, newData)
+
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
         time.sleep(3)
         os.system('CLS')
 
