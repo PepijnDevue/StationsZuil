@@ -27,7 +27,7 @@ def goedkeuren():
 modNaam = input("Goedemiddag moderator van NS, wat is uw naam?: ")
 modMail = input("Wat is uw werkmail?: ")
 print("Dankuwel "+ modNaam + ", werkze!")
-connection = psycopg2.connect(user="postgres", password="dimPw78150", host="localhost", database="ProjectZuil")
+connection = psycopg2.connect(user="name", password="ww", host="localhost", database="ProjectZuil")
 
 cursor = connection.cursor()
 
@@ -68,7 +68,7 @@ for i in data:
         #newData(opmerkingnr, opmerking, datumtijd, gebruikersnaam, station, goedgekeurd, keurdatumtijd, mail)
         print(newData)
 
-        connection = psycopg2.connect(user="postgres", password="dimPw78150", host="localhost", database="ProjectZuil")
+        connection = psycopg2.connect(user="name", password="ww", host="localhost", database="ProjectZuil")
 
         cursor = connection.cursor()
 
