@@ -36,13 +36,19 @@ connection = psycopg2.connect(user=name, password=ww, host="localhost", database
 cursor = connection.cursor()
 
 cursor.execute('SELECT * FROM moderator')
+itterations = 0
 for i in cursor.fetchall():
+    itterations += 1
     if not (i[0] == modMail and i[1] == modNaam):
         query = "INSERT INTO moderator (mail, naam) VALUES (%s,%s)"
         data = (modMail, modNaam)
         cursor.execute(query, data)
-
-connection.commit()
+        connection.commit()
+if itterations == 0:
+    query = "INSERT INTO moderator (mail, naam) VALUES (%s,%s)"
+    data = (modMail, modNaam)
+    cursor.execute(query, data)
+    connection.commit()
 
 cursor.close()
 connection.close()
@@ -64,8 +70,12 @@ for i in data:
         else:
             goedgekeurd = False
             print("\nU heeft het bericht afgekeurd")
+        connection = psycopg2.connect(user=name, password=ww, host="localhost", database="ProjectZuil")
+        cursor = connection.cursor()
         cursor.execute('select * from opmerking')
-        opmerkingnr = len(cursor)
+        #cursor.close()
+        #connection.close()
+        opmerkingnr = len(cursor.fetchall())
         newData = (opmerkingnr, i[0], i[1], i[2], i[3], goedgekeurd, time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime()), modMail)
         #newData(opmerkingnr, opmerking, datumtijd, gebruikersnaam, station, goedgekeurd, keurdatumtijd, mail)
 
@@ -73,7 +83,7 @@ for i in data:
 
         cursor = connection.cursor()
 
-        query = "INSERT INTO opmerking (opmerkingnr, opmerking, datumtijd, gebruikersnaam, station, goedgekeurd, keurdatumtijd, mail) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+        query = "INSERT INTO opmerking (opmerkingnr, opmerking, datumtijd, gebruikersnaam, stationnaam, goedgekeurd, keurdatumtijd, mail) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
         cursor.execute(query, newData)
 
         connection.commit()
@@ -83,6 +93,8 @@ for i in data:
 
         time.sleep(3)
         os.system('CLS')
+#cursor.close()
+#connection.close()
 
 file = open('opmerkingen.csv', 'w')
 writer = csv.writer(file)
