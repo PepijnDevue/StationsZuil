@@ -27,16 +27,20 @@ def goedkeuren():
 modNaam = input("Goedemiddag moderator van NS, wat is uw naam?: ")
 modMail = input("Wat is uw werkmail?: ")
 print("Dankuwel "+ modNaam + ", werkze!")
-connection = psycopg2.connect(user="name", password="ww", host="localhost", database="ProjectZuil")
+file = open("postrgre_info.txt", "r")
+data = (file.read()).split(";")
+name = data[0]
+ww = data[1]
+connection = psycopg2.connect(user=name, password=ww, host="localhost", database="ProjectZuil")
 
 cursor = connection.cursor()
 
-query = "INSERT INTO moderator (mail, naam) VALUES (%s,%s)"
-#-------------------------------------------------------------------------------------------------------------------
-#Check of mod al in moderator zit
-#--------------------------------------------------------------------------------------------------------------
-data = (modMail, modNaam)
-cursor.execute(query, data)
+cursor.execute('SELECT * FROM moderator')
+for i in cursor.fetchall():
+    if not (i[0] == modMail and i[1] == modNaam):
+        query = "INSERT INTO moderator (mail, naam) VALUES (%s,%s)
+        data = (modMail, modNaam)
+        cursor.execute(query, data)
 
 connection.commit()
 
@@ -60,15 +64,12 @@ for i in data:
         else:
             goedgekeurd = False
             print("\nU heeft het bericht afgekeurd")
-        #-------------------------------------------------------------------------------------------------------------
-        #Opmerkingnr ophalen?
-        #-------------------------------------------------------------------------------------------------------------
-        opmerkingnr = "?????"
+        cursor.execute('select * from opmerking')
+        opmerkingnr = len(cursor)
         newData = (opmerkingnr, i[0], i[1], i[2], i[3], goedgekeurd, time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime()), modMail)
         #newData(opmerkingnr, opmerking, datumtijd, gebruikersnaam, station, goedgekeurd, keurdatumtijd, mail)
-        print(newData)
 
-        connection = psycopg2.connect(user="name", password="ww", host="localhost", database="ProjectZuil")
+        #connection = psycopg2.connect(user="name", password="ww", host="localhost", database="ProjectZuil")
 
         cursor = connection.cursor()
 
