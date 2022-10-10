@@ -38,7 +38,7 @@ cursor = connection.cursor()
 cursor.execute('SELECT * FROM moderator')
 for i in cursor.fetchall():
     if not (i[0] == modMail and i[1] == modNaam):
-        query = "INSERT INTO moderator (mail, naam) VALUES (%s,%s)
+        query = "INSERT INTO moderator (mail, naam) VALUES (%s,%s)"
         data = (modMail, modNaam)
         cursor.execute(query, data)
 
