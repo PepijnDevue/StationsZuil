@@ -37,21 +37,18 @@ cursor = connection.cursor()
 
 cursor.execute('SELECT * FROM moderator')
 itterations = 0
+duplicate = False
 for i in cursor.fetchall():
     itterations += 1
-    if not (i[0] == modMail and i[1] == modNaam):
-        query = "INSERT INTO moderator (mail, naam) VALUES (%s,%s)"
-        data = (modMail, modNaam)
-        cursor.execute(query, data)
-        connection.commit()
-if itterations == 0:
+    if (i[0] == modMail):
+        duplicate = True
+
+if itterations == 0 or duplicate == False:
     query = "INSERT INTO moderator (mail, naam) VALUES (%s,%s)"
     data = (modMail, modNaam)
     cursor.execute(query, data)
     connection.commit()
 
-cursor.close()
-connection.close()
 time.sleep(3)
 os.system("CLS")
 
@@ -63,25 +60,16 @@ file.close()
 for i in data:
     if(i != []):
         print("Het bericht wordt hieronder getoond \n\n'" + i[0] + "'\n")
-        goedkeuring = input("Als het bericht goed wordt gekeurd, typ 'goedgekeurd', anders typ 'afgekeurd': ")
-        if (goedkeuring == "goedgekeurd"):
-            goedgekeurd = True
+        goedgekeurd = goedkeuren()
+        if (goedgekeurd == True):
             print("\nU heeft het bericht goedgekeurd")
         else:
-            goedgekeurd = False
             print("\nU heeft het bericht afgekeurd")
         connection = psycopg2.connect(user=name, password=ww, host="localhost", database="ProjectZuil")
         cursor = connection.cursor()
         cursor.execute('select * from opmerking')
-        #cursor.close()
-        #connection.close()
         opmerkingnr = len(cursor.fetchall())
         newData = (opmerkingnr, i[0], i[1], i[2], i[3], goedgekeurd, time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime()), modMail)
-        #newData(opmerkingnr, opmerking, datumtijd, gebruikersnaam, station, goedgekeurd, keurdatumtijd, mail)
-
-        #connection = psycopg2.connect(user="name", password="ww", host="localhost", database="ProjectZuil")
-
-        cursor = connection.cursor()
 
         query = "INSERT INTO opmerking (opmerkingnr, opmerking, datumtijd, gebruikersnaam, stationnaam, goedgekeurd, keurdatumtijd, mail) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
         cursor.execute(query, newData)
@@ -93,8 +81,6 @@ for i in data:
 
         time.sleep(3)
         os.system('CLS')
-#cursor.close()
-#connection.close()
 
 file = open('opmerkingen.csv', 'w')
 writer = csv.writer(file)
