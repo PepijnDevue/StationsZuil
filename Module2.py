@@ -22,7 +22,7 @@ def goedkeuren():
         return False
     else:
         print("Oordeel niet goed geformeerd, typ aub 'goedgekeurd' of 'afgekeurd'")
-        goedkeuren()
+        return goedkeuren()
 
 modNaam = input("Goedemiddag moderator van NS, wat is uw naam?: ")
 modMail = input("Wat is uw werkmail?: ")
