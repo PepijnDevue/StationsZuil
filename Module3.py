@@ -13,12 +13,50 @@ Voor layout startscherm zie ('Layout scherm.jpg') en voor layout stationsscherm 
 """
 from tkinter import *
 import time
+import psycopg2
+from PIL import Image,ImageTk
 
 def main_layout(stad):
     root = Tk()
     canvas = Canvas(root, height=720, width=1280)
     ns_blue = "#%02x%02x%02x" % (0, 48, 130)
-    print(stad)
+
+    #lines  etc
+    canvas.create_rectangle(0, 0, 1280, 100, fill=(ns_blue))
+    canvas.create_rectangle(0, 650, 1280, 720, fill=(ns_blue))
+    canvas.create_text(160, 50, text=stad, fill="white", font=('Sans 50 bold'))
+
+    #weather
+
+    #facilities
+    file = open("postrgre_info.txt", "r")
+    data = (file.read()).split(";")
+    name = data[0]
+    ww = data[1]
+    connection = psycopg2.connect(user=name, password=ww, host="localhost", database="ProjectZuil")
+    cursor = connection.cursor()
+    query = 'SELECT * FROM station where stationnaam = %s'
+    cursor.execute(query, (stad,))
+    data = cursor.fetchall()
+    facility_lst = []
+    if data[0][2]:
+        facility_lst.append("ovfiets")
+    if data[0][3]:
+        facility_lst.append("lift")
+    if data[0][4]:
+        facility_lst.append("pr")
+    if data[0][5]:
+        facility_lst.append("toilet")
+    facility_img_lst = []
+    for i in range(len(facility_lst)):
+        facility_img_lst.append(ImageTk.PhotoImage(Image.open("img_{}.png".format(facility_lst[i]))))
+        canvas.create_image(1250 - i*80, 685, image=facility_img_lst[i])
+
+
+
+    #Messages
+
+    canvas.pack()
     root.mainloop()
 
 root = Tk()
