@@ -12,10 +12,14 @@ Voor layout startscherm zie ('Layout scherm.jpg') en voor layout stationsscherm 
 10.	Update de nieuwe informatie op t scherm
 """
 from tkinter import *
+import time
 
 def main_layout(stad):
-    #layout
+    root = Tk()
+    canvas = Canvas(root, height=720, width=1280)
+    ns_blue = "#%02x%02x%02x" % (0, 48, 130)
     print(stad)
+    root.mainloop()
 
 root = Tk()
 
@@ -23,13 +27,27 @@ def enter_main(stad):
     global root
     root.destroy()
     main_layout(stad)
+
+
+def menu_klok():
+    try:
+        global Canvas, klok
+        tijd = time.strftime('%H:%M', time.localtime())
+        klok.config(text=tijd)
+        root.after(1000, menu_klok)
+    except:
+        pass
 def menu_layout():
+    global klok
     canvas = Canvas(root, height=720, width=1280)
     ns_blue = "#%02x%02x%02x" % (0, 48, 130)
     canvas.create_rectangle(0, 0, 1280, 100, fill=(ns_blue))
     canvas.create_rectangle(0, 620, 1280, 720, fill=(ns_blue))
     canvas.create_text(640, 200, text="Goedemorgen,", fill=ns_blue, font=('Sans 50 bold'))
     canvas.create_text(640, 300, text="Kies een station:", fill=ns_blue, font=('Sans 50 bold'))
+    klok = Label(text="", font=('Sans 50 bold'), bg=ns_blue, fg="white")
+    klok.place(x=1100, y=10)
+    menu_klok()
     utrecht_knop = Button(canvas, text= "Utrecht", command= lambda: enter_main("Utrecht"), bd = 4, fg = ns_blue, font="Sans 30 bold")
     utrecht_knop.place(x=200, y=400)
     arnhem_knop = Button(canvas, text="Arnhem", command=lambda: enter_main("Arnhem"), bd = 4, fg = ns_blue, font="Sans 30 bold")
@@ -38,8 +56,6 @@ def menu_layout():
     den_haag_knop.place(x=880, y=400)
     canvas.pack()
     root.mainloop()
-
-
 
 
 def updatedb():
