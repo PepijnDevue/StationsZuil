@@ -16,6 +16,17 @@ import time
 import psycopg2
 from PIL import Image,ImageTk
 
+def menu_klok():
+    try:
+        print("f")
+        global Canvas, klok
+        tijd = time.strftime('%H:%M', time.localtime())
+        klok.config(text=tijd)
+        root.after(1000, menu_klok)
+        print("fs")
+    except:
+        pass
+
 def main_layout(stad):
     root = Tk()
     canvas = Canvas(root, height=720, width=1280)
@@ -53,8 +64,12 @@ def main_layout(stad):
         canvas.create_image(1250 - i*80, 685, image=facility_img_lst[i])
 
 
-
     #Messages
+
+    #Clock
+    klok = Label(text="", font=('Sans 50 bold'), bg=ns_blue, fg="white")
+    klok.place(x=1100, y=10)
+    menu_klok()
 
     canvas.pack()
     root.mainloop()
@@ -67,14 +82,7 @@ def enter_main(stad):
     main_layout(stad)
 
 
-def menu_klok():
-    try:
-        global Canvas, klok
-        tijd = time.strftime('%H:%M', time.localtime())
-        klok.config(text=tijd)
-        root.after(1000, menu_klok)
-    except:
-        pass
+
 def menu_layout():
     global klok
     canvas = Canvas(root, height=720, width=1280)
