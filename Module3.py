@@ -25,15 +25,31 @@ def menu_klok():
     except:
         pass
 
+
+def exit_main_esc(key):
+    global main_root
+    if key.keysym == "Escape":
+        main_root.destroy()
+        quit()
+
+def exit_main_click():
+    global main_root
+    main_root.destroy()
+    quit()
+
+
 def main_layout(stad):
-    root = Tk()
-    canvas = Canvas(root, height=720, width=1280)
+    global main_root
+    main_root = Tk()
+    main_canvas = Canvas(main_root, height=720, width=1280)
     ns_blue = "#%02x%02x%02x" % (0, 48, 130)
 
     #lines  etc
-    canvas.create_rectangle(0, 0, 1280, 100, fill=(ns_blue))
-    canvas.create_rectangle(0, 650, 1280, 720, fill=(ns_blue))
-    canvas.create_text(160, 50, text=stad, fill="white", font=('Sans 50 bold'))
+    main_canvas.create_rectangle(800, 0, 803, 720, fill=ns_blue)
+    main_canvas.create_rectangle(0, 0, 1280, 100, fill=(ns_blue))
+    main_canvas.create_rectangle(0, 650, 1280, 720, fill=(ns_blue))
+    main_canvas.create_text(160, 50, text=stad, fill="white", font=('Sans 50 bold'))
+
 
     #weather
 
@@ -59,7 +75,7 @@ def main_layout(stad):
     facility_img_lst = []
     for i in range(len(facility_lst)):
         facility_img_lst.append(ImageTk.PhotoImage(Image.open("img_{}.png".format(facility_lst[i]))))
-        canvas.create_image(1250 - i*80, 685, image=facility_img_lst[i])
+        main_canvas.create_image(1250 - i*80, 685, image=facility_img_lst[i])
 
 
     #Messages
@@ -69,8 +85,13 @@ def main_layout(stad):
     klok.place(x=1100, y=10)
     menu_klok()
 
-    canvas.pack()
-    root.mainloop()
+    #exit usage
+    main_canvas.focus_set()
+    main_canvas.bind('<KeyPress>', exit_main_esc)
+    main_root.protocol("WM_DELETE_WINDOW", exit_main_click)
+
+    main_canvas.pack()
+    main_root.mainloop()
 
 root = Tk()
 
