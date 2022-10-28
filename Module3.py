@@ -18,12 +18,10 @@ from PIL import Image,ImageTk
 
 def menu_klok():
     try:
-        print("f")
         global Canvas, klok
         tijd = time.strftime('%H:%M', time.localtime())
         klok.config(text=tijd)
         root.after(1000, menu_klok)
-        print("fs")
     except:
         pass
 
@@ -81,7 +79,14 @@ def enter_main(stad):
     root.destroy()
     main_layout(stad)
 
+def exit_menu_esc(key):
+    if key.keysym == "Escape":
+        root.destroy()
+        quit()
 
+def exit_menu_click():
+    root.destroy()
+    quit()
 
 def menu_layout():
     global klok
@@ -100,18 +105,21 @@ def menu_layout():
     arnhem_knop.place(x=540, y=400)
     den_haag_knop = Button(canvas, text="Den Haag", command=lambda: enter_main("Den Haag"), bd = 4, fg = ns_blue, font="Sans 30 bold")
     den_haag_knop.place(x=880, y=400)
+    canvas.focus_set()
+    canvas.bind('<KeyPress>', exit_menu_esc)
+    root.protocol("WM_DELETE_WINDOW", exit_menu_click)
     canvas.pack()
     root.mainloop()
 
 
 def updatedb():
     #update laatste 5 opmerkingen (1 minuut)
-    db = 1
+    pass
 
 
 def update_weather():
     #refresh weather info (5 sec)
-    weather = 1
+    pass
 
 
 def main_loop():
