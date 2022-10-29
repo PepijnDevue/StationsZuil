@@ -43,8 +43,16 @@ def main_layout(stad):
     main_root = Tk()
     main_canvas = Canvas(main_root, height=720, width=1280)
     ns_blue = "#%02x%02x%02x" % (0, 48, 130)
+    ns_light_blue = "#%02x%02x%02x" % (200, 220, 255)
 
     #lines  etc
+    main_canvas.create_rectangle(0, 100, 800, 210, fill=ns_light_blue)
+    main_canvas.create_rectangle(0, 320, 800, 430, fill=ns_light_blue)
+    main_canvas.create_rectangle(0, 540, 800, 650, fill=ns_light_blue)
+    main_canvas.create_line(0, 210, 800, 210, fill=ns_blue)
+    main_canvas.create_line(0, 320, 800, 320, fill=ns_blue)
+    main_canvas.create_line(0, 430, 800, 430, fill=ns_blue)
+    main_canvas.create_line(0, 540, 800, 540, fill=ns_blue)
     main_canvas.create_rectangle(800, 0, 803, 720, fill=ns_blue)
     main_canvas.create_rectangle(0, 0, 1280, 100, fill=(ns_blue))
     main_canvas.create_rectangle(0, 650, 1280, 720, fill=(ns_blue))
