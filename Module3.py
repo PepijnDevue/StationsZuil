@@ -87,6 +87,24 @@ def main_layout(stad):
 
 
     #Messages
+    query = "select * from opmerking where stationnaam = %s and goedgekeurd = 'true' order by opmerkingnr desc limit 5;"
+    cursor.execute(query, (stad,))
+    data = cursor.fetchall()
+    opmerkingen = []
+    gebruikersnamen = []
+    bericht_data = []
+    for i in range(len(data)):
+        datum = str(data[i][1]).split(" ")[0].split('-')[2] + "-" + str(data[i][1]).split(" ")[0].split("-")[1]
+        opmerking = data[i][2]
+        gebruiker = data[i][3]
+        y = i*110 + 160
+        opmerkingen.append(main_canvas.create_text(200, y, text=opmerking, fill=ns_blue, font='Sans 35'))
+        gebruikersnamen.append(main_canvas.create_text(50, y - 45, text=gebruiker, fill=ns_blue, font='Sans 20'))
+        bericht_data.append(main_canvas.create_text(760, y - 45, text=datum, fill=ns_blue, font='Sans 20'))
+
+    #aanpassen fontgrootte en x-waarde bericht en gebruikersnaam met lengte bericht
+
+
 
     #Clock
     klok = Label(text="", font=('Sans 50 bold'), bg=ns_blue, fg="white")
