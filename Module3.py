@@ -15,13 +15,24 @@ from tkinter import *
 import time
 import psycopg2
 from PIL import Image,ImageTk
+import requests
+from io import BytesIO
 
-def menu_klok():
+def menu_klok_tick():
     try:
         global Canvas, klok
         tijd = time.strftime('%H:%M', time.localtime())
         klok.config(text=tijd)
-        root.after(1000, menu_klok)
+        root.after(1000, menu_klok_tick)
+    except:
+        pass
+
+def main_klok_tick():
+    try:
+        global Canvas, main_klok
+        tijd = time.strftime('%H:%M', time.localtime())
+        main_klok.config(text=tijd)
+        root.after(1000, main_klok_tick)
     except:
         pass
 
@@ -39,7 +50,7 @@ def exit_main_click():
 
 
 def main_layout(stad):
-    global main_root
+    global main_root, main_klok
     main_root = Tk()
     main_canvas = Canvas(main_root, height=720, width=1280)
     ns_blue = "#%02x%02x%02x" % (0, 48, 130)
@@ -49,6 +60,7 @@ def main_layout(stad):
     main_canvas.create_rectangle(0, 100, 800, 210, fill=ns_light_blue)
     main_canvas.create_rectangle(0, 320, 800, 430, fill=ns_light_blue)
     main_canvas.create_rectangle(0, 540, 800, 650, fill=ns_light_blue)
+    main_canvas.create_rectangle(800, 100, 1280, 650, fill=ns_light_blue)
     main_canvas.create_line(0, 210, 800, 210, fill=ns_blue)
     main_canvas.create_line(0, 320, 800, 320, fill=ns_blue)
     main_canvas.create_line(0, 430, 800, 430, fill=ns_blue)
@@ -60,6 +72,16 @@ def main_layout(stad):
 
 
     #weather
+    city = requests.get("https://api.openweathermap.org/data/2.5/weather?q=Utrecht&lang=nl&appid=b59def085bea9cb5dad8e6dff7cc627f").json()
+    description = city['weather'][0]['description']
+    icon = "http://openweathermap.org/img/wn/{}@2x.png".format(city['weather'][0]['icon'])
+    tempC = city['main']['temp'] - 273.15
+    windspeed = city['wind']['speed']
+    img_data = requests.get(icon).content
+    icon_image = ImageTk.PhotoImage((Image.open(BytesIO(img_data))).resize((250, 250)))
+    main_canvas.create_image(1100, 400, image=icon_image)
+
+
 
     #facilities
     file = open("postrgre_info.txt", "r")
@@ -107,9 +129,9 @@ def main_layout(stad):
 
 
     #Clock
-    klok = Label(text="", font=('Sans 50 bold'), bg=ns_blue, fg="white")
-    klok.place(x=1100, y=10)
-    menu_klok()
+    main_klok = Label(text="dcf", font=('Sans 50 bold'), bg=ns_blue, fg="white")
+    main_klok.place(x=1100, y=10)
+    main_klok_tick()
 
     #exit usage
     main_canvas.focus_set()
@@ -145,7 +167,7 @@ def menu_layout():
     canvas.create_text(640, 300, text="Kies een station:", fill=ns_blue, font=('Sans 50 bold'))
     klok = Label(text="", font=('Sans 50 bold'), bg=ns_blue, fg="white")
     klok.place(x=1100, y=10)
-    menu_klok()
+    menu_klok_tick()
     utrecht_knop = Button(canvas, text= "Utrecht", command= lambda: enter_main("Utrecht"), bd = 4, fg = ns_blue, font="Sans 30 bold")
     utrecht_knop.place(x=200, y=400)
     arnhem_knop = Button(canvas, text="Arnhem", command=lambda: enter_main("Arnhem"), bd = 4, fg = ns_blue, font="Sans 30 bold")
