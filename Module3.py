@@ -121,9 +121,11 @@ def main_layout(stad):
     for i in range(len(data)):
         datum = str(data[i][1]).split(" ")[0].split('-')[2] + "-" + str(data[i][1]).split(" ")[0].split("-")[1]
         opmerking = data[i][2]
+        opmerking1 = slice(0, len(opmerking)//2)
+        opmerking2 = slice(len(opmerking)//2, len(opmerking))
         gebruiker = data[i][3]
         y = i*110 + 100
-        opmerkingen.append(main_canvas.create_text(100, y + 45, text=opmerking, fill=ns_blue, font='Sans 35', anchor='nw'))
+        opmerkingen.append(main_canvas.create_text(100, y + 45, text=opmerking, fill=ns_blue, font='Sans 14', anchor='nw'))
         gebruikersnamen.append(main_canvas.create_text(15, y + 5, text=gebruiker, fill=ns_blue, font='Sans 20', anchor='nw'))
         bericht_data.append(main_canvas.create_text(790, y, text=datum, fill=ns_blue, font='Sans 20', anchor='ne'))
 

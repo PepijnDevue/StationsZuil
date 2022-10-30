@@ -18,7 +18,7 @@ def opmerkingMaken():
 while True:
     station = locaties[random.randint(0, 2)]
     naam = input("Goedendag, wat is uw naam? Om anoniem te blijven vul in 'anoniem': ")
-    if(naam == ""):
+    if(naam == "" or len(naam) > 30):
         naam = "anoniem"
     opmerking = opmerkingMaken()
     datumTijd = time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime())
