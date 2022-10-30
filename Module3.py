@@ -68,7 +68,7 @@ def main_layout(stad):
     main_canvas.create_rectangle(800, 0, 803, 720, fill=ns_blue)
     main_canvas.create_rectangle(0, 0, 1280, 100, fill=(ns_blue))
     main_canvas.create_rectangle(0, 650, 1280, 720, fill=(ns_blue))
-    main_canvas.create_text(160, 50, text=stad, fill="white", font=('Sans 50 bold'))
+    main_canvas.create_text(20, 12, text=stad, fill="white", font=('Sans 50 bold'), anchor='nw')
 
 
     #weather
@@ -80,9 +80,9 @@ def main_layout(stad):
     img_data = requests.get(icon).content
     icon_image = ImageTk.PhotoImage((Image.open(BytesIO(img_data))).resize((250, 250)))
     main_canvas.create_image(1100, 400, image=icon_image)
-    main_canvas.create_text(1200, 200, text=tempC + '\N{DEGREE SIGN}', font='Sans 70 bold')
-    main_canvas.create_text(1100, 500, text='Windkracht ' + windspeed, font='Sans 30 bold')
-    main_canvas.create_text(1100, 600, text=description.capitalize(), font='Sans 30 bold')
+    main_canvas.create_text(1250, 150, text=tempC + '\N{DEGREE SIGN}', font='Sans 70 bold', anchor='ne')
+    main_canvas.create_text(1260, 500, text='Windkracht ' + windspeed, font='Sans 30 bold', anchor='ne')
+    main_canvas.create_text(1260, 550, text=description.capitalize(), font='Sans 30 bold', anchor='ne')
 
 
 
@@ -122,10 +122,10 @@ def main_layout(stad):
         datum = str(data[i][1]).split(" ")[0].split('-')[2] + "-" + str(data[i][1]).split(" ")[0].split("-")[1]
         opmerking = data[i][2]
         gebruiker = data[i][3]
-        y = i*110 + 160
-        opmerkingen.append(main_canvas.create_text(200, y, text=opmerking, fill=ns_blue, font='Sans 35'))
-        gebruikersnamen.append(main_canvas.create_text(50, y - 45, text=gebruiker, fill=ns_blue, font='Sans 20'))
-        bericht_data.append(main_canvas.create_text(760, y - 45, text=datum, fill=ns_blue, font='Sans 20'))
+        y = i*110 + 100
+        opmerkingen.append(main_canvas.create_text(100, y + 45, text=opmerking, fill=ns_blue, font='Sans 35', anchor='nw'))
+        gebruikersnamen.append(main_canvas.create_text(15, y + 5, text=gebruiker, fill=ns_blue, font='Sans 20', anchor='nw'))
+        bericht_data.append(main_canvas.create_text(790, y, text=datum, fill=ns_blue, font='Sans 20', anchor='ne'))
 
     #aanpassen fontgrootte en x-waarde bericht en gebruikersnaam met lengte bericht
 
