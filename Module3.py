@@ -75,11 +75,14 @@ def main_layout(stad):
     city = requests.get("https://api.openweathermap.org/data/2.5/weather?q=Utrecht&lang=nl&appid=b59def085bea9cb5dad8e6dff7cc627f").json()
     description = city['weather'][0]['description']
     icon = "http://openweathermap.org/img/wn/{}@2x.png".format(city['weather'][0]['icon'])
-    tempC = city['main']['temp'] - 273.15
-    windspeed = city['wind']['speed']
+    tempC = str(round(city['main']['temp'] - 273.15))
+    windspeed = str(city['wind']['speed'])
     img_data = requests.get(icon).content
     icon_image = ImageTk.PhotoImage((Image.open(BytesIO(img_data))).resize((250, 250)))
     main_canvas.create_image(1100, 400, image=icon_image)
+    main_canvas.create_text(1200, 200, text=tempC + '\N{DEGREE SIGN}', font='Sans 70 bold')
+    main_canvas.create_text(1100, 500, text='Windkracht ' + windspeed, font='Sans 30 bold')
+    main_canvas.create_text(1100, 600, text=description.capitalize(), font='Sans 30 bold')
 
 
 
