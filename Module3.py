@@ -7,9 +7,8 @@ Voor layout startscherm zie ('Layout scherm.jpg') en voor layout stationsscherm 
 6.	Haal de weerinformatie van de stad van het station voor de komende uren
 4.	Laat deze gegevens volgens de layout op het scherm zien
 7.	Herhaal de volgende stappen tot het programma sluit
-8.	Haal elke 5 minuten nieuwe weerinformatie op
-9.	Kijk elke 5 seconden of er nieuwe opmerkingen zijn
-10.	Update de nieuwe informatie op t scherm
+8.	Kijk elke 30 seconden of er nieuwe opmerkingen zijn
+9.	Update de nieuwe informatie op t scherm
 """
 from tkinter import *
 import time
@@ -17,6 +16,16 @@ import psycopg2
 from PIL import Image,ImageTk
 import requests
 from io import BytesIO
+
+ns_blue = "#%02x%02x%02x" % (0, 48, 130)
+ns_light_blue = "#%02x%02x%02x" % (200, 220, 255)
+opmerkingen = []
+gebruikersnamen = []
+bericht_data = []
+stad = ""
+cursor = ""
+main_canvas = ""
+root = Tk()
 
 def menu_klok_tick():
     try:
@@ -49,12 +58,36 @@ def exit_main_click():
     quit()
 
 
-def main_layout(stad):
-    global main_root, main_klok
+def update_messages():
+    global opmerkingen, gebruikersnamen, bericht_data, stad, cursor, main_canvas
+    main_canvas.delete("opmerkingen_tag")
+    main_canvas.delete("gebruikersnamen_tag")
+    main_canvas.delete("bericht_data_tag")
+    query = "select * from opmerking where stationnaam = %s and goedgekeurd = 'true' order by opmerkingnr desc limit 5;"
+    cursor.execute(query, (stad,))
+    data = cursor.fetchall()
+    for i in range(len(data)):
+        datum = str(data[i][1]).split(" ")[0].split('-')[2] + "-" + str(data[i][1]).split(" ")[0].split("-")[1]
+        opmerking = data[i][2]
+
+        gebruiker = data[i][3]
+        y = i * 110 + 100
+        if (len(opmerking) <= 35):
+            opmerkingen.append(main_canvas.create_text(100, y + 45, text=opmerking, fill=ns_blue, font='Sans 35', anchor='nw', tag='opmerkingen_tag'))
+        elif (len(opmerking) > 60):
+            opmerking1 = opmerking[slice(0, len(opmerking) // 2)]
+            opmerking2 = opmerking[slice(len(opmerking) // 2, len(opmerking))]
+            opmerkingen.append(main_canvas.create_text(100, y + 45, text=opmerking1 + "\n" + opmerking2, fill=ns_blue, font='Sans 14',anchor='nw', tag='opmerkingen_tag'))
+        else:
+            opmerkingen.append(main_canvas.create_text(100, y + 45, text=opmerking, fill=ns_blue, font='Sans 14', anchor='nw', tag='opmerkingen_tag'))
+        gebruikersnamen.append(main_canvas.create_text(15, y + 5, text=gebruiker, fill=ns_blue, font='Sans 20', anchor='nw', tag='gebruikersnamen_tag'))
+        bericht_data.append(main_canvas.create_text(790, y, text=datum, fill=ns_blue, font='Sans 20', anchor='ne', tag='bericht_data_tag'))
+    root.after(30000, update_messages)
+
+def main_layout():
+    global main_root, main_klok, opmerkingen, gebruikersnamen, bericht_data, stad, cursor, main_canvas
     main_root = Tk()
     main_canvas = Canvas(main_root, height=720, width=1280)
-    ns_blue = "#%02x%02x%02x" % (0, 48, 130)
-    ns_light_blue = "#%02x%02x%02x" % (200, 220, 255)
 
     #lines  etc
     main_canvas.create_rectangle(0, 100, 800, 210, fill=ns_light_blue)
@@ -72,7 +105,7 @@ def main_layout(stad):
 
 
     #weather
-    city = requests.get("https://api.openweathermap.org/data/2.5/weather?q=Utrecht&lang=nl&appid=b59def085bea9cb5dad8e6dff7cc627f").json()
+    city = requests.get("https://api.openweathermap.org/data/2.5/weather?q={}&lang=nl&appid=b59def085bea9cb5dad8e6dff7cc627f".format(stad)).json()
     description = city['weather'][0]['description']
     icon = "http://openweathermap.org/img/wn/{}@2x.png".format(city['weather'][0]['icon'])
     tempC = str(round(city['main']['temp'] - 273.15))
@@ -112,38 +145,14 @@ def main_layout(stad):
 
 
     #Messages
-    query = "select * from opmerking where stationnaam = %s and goedgekeurd = 'true' order by opmerkingnr desc limit 5;"
-    cursor.execute(query, (stad,))
-    data = cursor.fetchall()
-    opmerkingen = []
-    gebruikersnamen = []
-    bericht_data = []
-    for i in range(len(data)):
-        datum = str(data[i][1]).split(" ")[0].split('-')[2] + "-" + str(data[i][1]).split(" ")[0].split("-")[1]
-        opmerking = data[i][2]
-
-        gebruiker = data[i][3]
-        y = i*110 + 100
-        font = 14
-        if (len(opmerking) <= 35):
-            opmerkingen.append(main_canvas.create_text(100, y + 45, text=opmerking, fill=ns_blue, font='Sans 35', anchor='nw'))
-        elif (len(opmerking) > 60):
-            opmerking1 = opmerking[slice(0, len(opmerking) // 2)]
-            opmerking2 = opmerking[slice(len(opmerking) // 2, len(opmerking))]
-            opmerkingen.append(main_canvas.create_text(100, y + 45, text=opmerking1 + "\n" + opmerking2, fill=ns_blue, font='Sans 14', anchor='nw'))
-        else:
-            opmerkingen.append(main_canvas.create_text(100, y + 45, text=opmerking, fill=ns_blue, font='Sans 14', anchor='nw'))
-        gebruikersnamen.append(main_canvas.create_text(15, y + 5, text=gebruiker, fill=ns_blue, font='Sans 20', anchor='nw'))
-        bericht_data.append(main_canvas.create_text(790, y, text=datum, fill=ns_blue, font='Sans 20', anchor='ne'))
-
-    #aanpassen fontgrootte en x-waarde bericht en gebruikersnaam met lengte bericht
-
+    update_messages()
 
 
     #Clock
     main_klok = Label(text="dcf", font=('Sans 50 bold'), bg=ns_blue, fg="white")
     main_klok.place(x=1100, y=10)
     main_klok_tick()
+
 
     #exit usage
     main_canvas.focus_set()
@@ -153,21 +162,24 @@ def main_layout(stad):
     main_canvas.pack()
     main_root.mainloop()
 
-root = Tk()
 
-def enter_main(stad):
-    global root
+def enter_main(station):
+    global root, stad
     root.destroy()
-    main_layout(stad)
+    stad = station
+    main_layout()
+
 
 def exit_menu_esc(key):
     if key.keysym == "Escape":
         root.destroy()
         quit()
 
+
 def exit_menu_click():
     root.destroy()
     quit()
+
 
 def menu_layout():
     global klok
@@ -193,20 +205,4 @@ def menu_layout():
     root.mainloop()
 
 
-def updatedb():
-    #update laatste 5 opmerkingen (1 minuut)
-    pass
-
-
-def update_weather():
-    #refresh weather info (5 sec)
-    pass
-
-
-def main_loop():
-    menu_layout()
-    while True:
-        updatedb()
-        update_weather()
-
-main_loop()
+menu_layout()
