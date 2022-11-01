@@ -63,8 +63,8 @@ def update_messages():
     main_canvas.delete("opmerkingen_tag")
     main_canvas.delete("gebruikersnamen_tag")
     main_canvas.delete("bericht_data_tag")
-    query = "select * from opmerking where stationnaam = %s and goedgekeurd = 'true' order by opmerkingnr desc limit 5;"
-    cursor.execute(query, (stad,))
+    query = "select * from opmerking where goedgekeurd = 'true' order by opmerkingnr desc limit 5;"
+    cursor.execute(query)
     data = cursor.fetchall()
     for i in range(len(data)):
         datum = str(data[i][1]).split(" ")[0].split('-')[2] + "-" + str(data[i][1]).split(" ")[0].split("-")[1]
@@ -109,7 +109,7 @@ def main_layout():
     description = city['weather'][0]['description']
     icon = "http://openweathermap.org/img/wn/{}@2x.png".format(city['weather'][0]['icon'])
     tempC = str(round(city['main']['temp'] - 273.15))
-    windspeed = str(city['wind']['speed'])
+    windspeed = str(round(((city['wind']['speed']/0.836)**2)**(1/3)))
     img_data = requests.get(icon).content
     icon_image = ImageTk.PhotoImage((Image.open(BytesIO(img_data))).resize((250, 250)))
     main_canvas.create_image(1100, 400, image=icon_image)
