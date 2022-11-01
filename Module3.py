@@ -10,6 +10,8 @@ Voor layout startscherm zie ('Layout scherm.jpg') en voor layout stationsscherm 
 8.	Kijk elke 30 seconden of er nieuwe opmerkingen zijn
 9.	Update de nieuwe informatie op t scherm
 """
+
+"""
 from tkinter import *
 import time
 import psycopg2
@@ -206,3 +208,165 @@ def menu_layout():
 
 
 menu_layout()
+"""
+
+
+#------------------------------------------------------------------------------------------
+
+from tkinter import *
+import time
+import psycopg2
+from PIL import Image,ImageTk
+import requests
+from io import BytesIO
+
+ns_blue = "#%02x%02x%02x" % (0, 48, 130)
+ns_light_blue = "#%02x%02x%02x" % (200, 220, 255)
+opmerkingen = []
+gebruikersnamen = []
+bericht_data = []
+stad = ""
+cursor = ""
+main_canvas = ""
+
+
+
+def main():
+    root = Tk()
+    station = ""
+
+    def exit_esc(key):
+        if key.keysym == "Escape":
+            root.destroy()
+            quit()
+
+    def exit_click():
+        root.destroy()
+        quit()
+    def klok_tick():
+        try:
+            tijd = time.strftime('%H:%M', time.localtime())
+            klok.config(text=tijd)
+            root.after(1000, klok_tick)
+        except:
+            pass
+
+    def update_messages(cursor):
+        #global opmerkingen, gebruikersnamen, bericht_data, stad, cursor, main_canvas
+        canvas.delete("opmerkingen_tag")
+        canvas.delete("gebruikersnamen_tag")
+        canvas.delete("bericht_data_tag")
+        query = "select * from opmerking where goedgekeurd = 'true' order by opmerkingnr desc limit 5;"
+        cursor.execute(query)
+        data = cursor.fetchall()
+        for i in range(len(data)):
+            datum = str(data[i][1]).split(" ")[0].split('-')[2] + "-" + str(data[i][1]).split(" ")[0].split("-")[1]
+            opmerking = data[i][2]
+
+            gebruiker = data[i][3]
+            y = i * 110 + 100
+            if (len(opmerking) <= 35):
+                opmerkingen.append(
+                    canvas.create_text(100, y + 45, text=opmerking, fill=ns_blue, font='Sans 35', anchor='nw',
+                                            tag='opmerkingen_tag'))
+            elif (len(opmerking) > 60):
+                opmerking1 = opmerking[slice(0, len(opmerking) // 2)]
+                opmerking2 = opmerking[slice(len(opmerking) // 2, len(opmerking))]
+                opmerkingen.append(
+                    canvas.create_text(100, y + 45, text=opmerking1 + "\n" + opmerking2, fill=ns_blue,
+                                            font='Sans 14', anchor='nw', tag='opmerkingen_tag'))
+            else:
+                opmerkingen.append(
+                    canvas.create_text(100, y + 45, text=opmerking, fill=ns_blue, font='Sans 14', anchor='nw',
+                                            tag='opmerkingen_tag'))
+            gebruikersnamen.append(
+                canvas.create_text(15, y + 5, text=gebruiker, fill=ns_blue, font='Sans 20', anchor='nw',
+                                        tag='gebruikersnamen_tag'))
+            bericht_data.append(canvas.create_text(790, y, text=datum, fill=ns_blue, font='Sans 20', anchor='ne',
+                                                        tag='bericht_data_tag'))
+        root.after(30000, update_messages)
+
+    def enter_screen(station):
+        # lines  etc
+        canvas.create_rectangle(0, 100, 800, 210, fill=ns_light_blue)
+        canvas.create_rectangle(0, 320, 800, 430, fill=ns_light_blue)
+        canvas.create_rectangle(0, 540, 800, 650, fill=ns_light_blue)
+        canvas.create_rectangle(800, 100, 1280, 650, fill=ns_light_blue)
+        canvas.create_line(0, 210, 800, 210, fill=ns_blue)
+        canvas.create_line(0, 320, 800, 320, fill=ns_blue)
+        canvas.create_line(0, 430, 800, 430, fill=ns_blue)
+        canvas.create_line(0, 540, 800, 540, fill=ns_blue)
+        canvas.create_line(800, 0, 800, 720, fill=ns_blue)
+        canvas.create_text(20, 12, text=station, fill="white", font=('Sans 50 bold'), anchor='nw')
+
+        # weather
+        city = requests.get("https://api.openweathermap.org/data/2.5/weather?q={}&lang=nl&appid=b59def085bea9cb5dad8e6dff7cc627f".format(station)).json()
+        description = city['weather'][0]['description']
+        icon = "http://openweathermap.org/img/wn/{}@2x.png".format(city['weather'][0]['icon'])
+        tempC = str(round(city['main']['temp'] - 273.15))
+        windspeed = str(round(((city['wind']['speed'] / 0.836) ** 2) ** (1 / 3)))
+        img_data = requests.get(icon).content
+        icon_image = ImageTk.PhotoImage((Image.open(BytesIO(img_data))).resize((250, 250)))
+        canvas.create_image(1100, 400, image=icon_image)
+        canvas.create_text(1250, 150, text=tempC + '\N{DEGREE SIGN}', font='Sans 70 bold', anchor='ne')
+        canvas.create_text(1260, 500, text='Windkracht ' + windspeed, font='Sans 30 bold', anchor='ne')
+        canvas.create_text(1260, 550, text=description.capitalize(), font='Sans 30 bold', anchor='ne')
+
+        # facilities
+        file = open("postrgre_info.txt", "r")
+        data = (file.read()).split(";")
+        name = data[0]
+        ww = data[1]
+        connection = psycopg2.connect(user=name, password=ww, host="localhost", database="ProjectZuil")
+        cursor = connection.cursor()
+        query = 'SELECT * FROM station where stationnaam = %s'
+        cursor.execute(query, (station,))
+        data = cursor.fetchall()
+        facility_lst = []
+        if data[0][2]:
+            facility_lst.append("ovfiets")
+        if data[0][3]:
+            facility_lst.append("lift")
+        if data[0][4]:
+            facility_lst.append("pr")
+        if data[0][5]:
+            facility_lst.append("toilet")
+        facility_img_lst = []
+        for i in range(len(facility_lst)):
+            facility_img_lst.append(ImageTk.PhotoImage(Image.open("img_{}.png".format(facility_lst[i]))))
+            canvas.create_image(1250 - i * 80, 685, image=facility_img_lst[i])
+
+        # Messages
+        update_messages(cursor)
+
+        return icon_image
+
+    def exit_menu(optie):
+        station = optie
+        canvas.delete("menu_tag")
+        utrecht_knop.destroy()
+        arnhem_knop.destroy()
+        den_haag_knop.destroy()
+        enter_screen(station)
+
+    canvas = Canvas(root, height=720, width=1280)
+    canvas.create_rectangle(0, 0, 1280, 100, fill=(ns_blue))
+    canvas.create_rectangle(0, 620, 1280, 720, fill=(ns_blue))
+    canvas.create_text(640, 200, text="Goedemorgen,", fill=ns_blue, font=('Sans 50 bold'), tag='menu_tag')
+    canvas.create_text(640, 300, text="Kies een station:", fill=ns_blue, font=('Sans 50 bold'), tag='menu_tag')
+    klok = Label(canvas, text="", font=('Sans 50 bold'), bg=ns_blue, fg="white")
+    klok.place(x=1100, y=10)
+    klok_tick()
+    utrecht_knop = Button(canvas, text="Utrecht", command=lambda: exit_menu("Utrecht"), bd=4, fg=ns_blue,font="Sans 30 bold")
+    utrecht_knop.place(x=200, y=400)
+    arnhem_knop = Button(canvas, text="Arnhem", command=lambda: exit_menu("Arnhem"), bd=4, fg=ns_blue, font="Sans 30 bold")
+    arnhem_knop.place(x=540, y=400)
+    den_haag_knop = Button(canvas, text="Den Haag", command=lambda: exit_menu("Den Haag"), bd=4, fg=ns_blue, font="Sans 30 bold")
+    den_haag_knop.place(x=880, y=400)
+    canvas.focus_set()
+    canvas.bind('<KeyPress>', exit_esc)
+    root.protocol("WM_DELETE_WINDOW", exit_click)
+    canvas.pack()
+    root.mainloop()
+
+main()
