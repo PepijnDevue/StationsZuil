@@ -234,6 +234,7 @@ main_canvas = ""
 def main():
     root = Tk()
     station = ""
+    icon_image = None
 
     def exit_esc(key):
         if key.keysym == "Escape":
@@ -287,6 +288,7 @@ def main():
         root.after(30000, update_messages)
 
     def enter_screen(station):
+        global icon_image
         # lines  etc
         canvas.create_rectangle(0, 100, 800, 210, fill=ns_light_blue)
         canvas.create_rectangle(0, 320, 800, 430, fill=ns_light_blue)
