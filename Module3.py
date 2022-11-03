@@ -60,7 +60,7 @@ def main():
 
 
     # update reviews function
-    def update_reviews(cursor):
+    def update_reviews():
         # delete current review gui elements
         canvas.delete("reviews_tag")
         canvas.delete("usernames_tag")
@@ -105,7 +105,7 @@ def main():
     # enter main screen after choosing a station
     def enter_screen(station):
         # get image placeholders
-        global icon_image, facility_img_lst
+        global icon_image, facility_img_lst, cursor
 
         # direct drawing
         canvas.create_rectangle(0, 100, 800, 210, fill=ns_light_blue)
@@ -174,7 +174,7 @@ def main():
             canvas.create_image(1250 - i * 80, 685, image=facility_img_lst[i])
 
         # Messages
-        update_reviews(cursor)
+        update_reviews()
 
 
     # exit menu function
