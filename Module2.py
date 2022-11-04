@@ -9,7 +9,6 @@
 8.	Ga door naar de volgende opmerking.
 """
 
-
 # imports
 import psycopg2
 from tkinter import *
@@ -53,6 +52,8 @@ def main():
         connection.commit()
         cursor.close()
         connection.close()
+
+        #create index for number of moderations
         i = 0
 
         def next_review(approved):
@@ -66,7 +67,6 @@ def main():
             cursor = connection.cursor()
 
             # updates reviewdata with moderatingdata
-            print(i)
             query = 'update opmerking set goedgekeurd = %s, keurdatumtijd = %s, mail = %s where opmerkingnr = %s'
             cursor.execute(query, (approved, dateTime, modMail, approveList[i][0]))
 
@@ -75,24 +75,31 @@ def main():
             cursor.close()
             connection.close()
 
+            # increment i to go to next review
             i += 1
+
+            # if there is another review to be moderated, display it, otherwise end the code
             if len(approveList) > i:
                 review.config(text=approveList[i][2])
             else:
-                goed.destroy()
-                nietgoed.destroy()
+                approve_button.destroy()
+                disapprove_button.destroy()
                 review.destroy()
                 canvas.create_text(640, 360, text="Dat waren de opmerkingen, bedankt!", anchor='center', font='Sans 50 bold', fill=ns_blue)
                 root.after(3000, exit)
 
+        # if both the name and the mail have been filled play the following code
         if name.get() != "" and mail.get() != "":
+            # assing mod logins
             modName = name.get()
             modMail = mail.get()
 
+            # delete the unnecessary gui elements
             canvas.delete('start')
             name.destroy()
             mail.destroy()
             login.destroy()
+
             # make connection with the database
             connection = psycopg2.connect(user=dbusername, password=password, host="localhost", database="ProjectZuil")
             cursor = connection.cursor()
@@ -111,42 +118,49 @@ def main():
                 query = "INSERT INTO moderator (mail, naam) VALUES (%s,%s)"
                 data = (modMail, modName)
                 cursor.execute(query, data)
+
+            # save and close connection with the database
             connection.commit()
             cursor.close()
             connection.close()
 
-
-
+            # create gui element for the reviews
             review = Label(canvas, text=approveList[0][2], font=('Sans 50 bold'), fg=ns_blue)
             review.place(x=640, y=250, anchor='n')
 
-            goed = Button(canvas, text="goedgekeurd", command= lambda: next_review(True), bd=4, fg=ns_blue, font="Sans 30 bold")
-            goed.place(x=330, y=450)
+            # create gui button for approving
+            approve_button = Button(canvas, text="goedgekeurd", command= lambda: next_review(True), bd=4, fg=ns_blue, font="Sans 30 bold")
+            approve_button.place(x=330, y=450)
 
-            nietgoed = Button(canvas, text="afgekeurd", padx=35, command=lambda: next_review(False), bd=4, fg=ns_blue, font="Sans 30 bold")
-            nietgoed.place(x=675, y=450)
+            # create gui button for disapproving
+            disapprove_button = Button(canvas, text="afgekeurd", padx=35, command=lambda: next_review(False), bd=4, fg=ns_blue, font="Sans 30 bold")
+            disapprove_button.place(x=675, y=450)
 
 
-
+    # create the root for the gui
     root = Tk()
-
     canvas = Canvas(root, height=720, width=1280)
 
+    # direct lines and gui elements
     canvas.create_rectangle(0, 0, 1280, 100, fill=(ns_blue))
     canvas.create_rectangle(0, 620, 1280, 720, fill=(ns_blue))
     canvas.create_text(640, 180, text="Goedendag moderator van NS", anchor='n', font='Sans 40 bold', fill=ns_blue, tag='start')
     canvas.create_text(420, 310, text='Naam:', font='Sans 20', fill=ns_blue, anchor='nw', tag='start')
     canvas.create_text(420, 400, text='Mail:', font='Sans 20', fill=ns_blue, anchor='nw', tag='start')
 
+    # create an inputbox for the moderator name
     name = Entry(canvas, font='Sans 20', fg=ns_blue, justify='center', width=20)
     name.place(x = 510, y= 310)
 
+    # create an inputbox for the moderator mail
     mail = Entry(canvas, font='Sans 20', fg=ns_blue, justify='center', width=20)
     mail.place(x=510, y=400)
 
+    # create a button to log in
     login = Button(canvas, text="Log in", command=enter_screen, bd=4, fg=ns_blue,font="Sans 20")
     login.place(x=600, y=500)
 
+    # set focus to the canvas to activate buttons
     canvas.focus_set()
 
     # create a clock
@@ -154,8 +168,10 @@ def main():
     clock.place(x=1100, y=10)
     clock_tick()
 
+    # draw all current canvas elements on the screen and loop gui code
     canvas.pack()
     root.mainloop()
 
+# start code if directly played
 if __name__ == "__main__":
     main()

@@ -53,9 +53,9 @@ while True:
     # makes connection with the database
     file = open("postrgre_info.txt", "r")
     data = (file.read()).split(";")
-    name = data[0]
+    dbusername = data[0]
     password = data[1]
-    connection = psycopg2.connect(user=name, password=password, host="localhost", database="ProjectZuil")
+    connection = psycopg2.connect(user=dbusername, password=password, host="localhost", database="ProjectZuil")
     cursor = connection.cursor()
 
     # takes the next review id out of the database
