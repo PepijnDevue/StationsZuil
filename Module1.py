@@ -5,7 +5,7 @@
 4. Laat de gebruiker een naam invoeren
 5. Als er niks wordt ingevoerd of de naam te lang is, vul 'anoniem'in
 6. Haalt de tijd van de opmerking op
-7. Schrijft de volgende data bij in het CSV bestand
+7. Schrijft de volgende data bij in de database
 8. Herhaal alle stappen tot het programma wordt gesloten
 """
 
@@ -16,54 +16,54 @@ import os
 import psycopg2
 
 # list of possible locations
-locaties = ["Arnhem", "Utrecht", "Den Haag"]
+locations = ["Arnhem", "Utrecht", "Den Haag"]
 
 
 # a function the lets the user input a review
-def opmerkingMaken():
+def giveReview():
     # input a review
-    opmerking = input("Wat vind u van dit station? Max 140 karakters: ")
+    review = input("Wat vind u van dit station? Max 140 karakters: ")
     # if too long or too short, give errormessage and try again, otherwise return the review
-    if(len(opmerking) > 140):
+    if(len(review) > 140):
         print("Sorry, het bericht dat u ingevoerd heeft is te lang, probeer het opnieuw.")
-        return opmerkingMaken()
-    elif(len(opmerking) == 0):
+        return giveReview()
+    elif(len(review) == 0):
         print("Sorry, u heeft niks ingevoerd, probeer het opnieuw")
-        return opmerkingMaken()
-    return opmerking
+        return giveReview()
+    return review
 
 
 # while the code is running repeat the following
 while True:
     # choose a random station out of the 3
-    station = locaties[random.randint(0, 2)]
+    station = locations[random.randint(0, 2)]
 
     # input a username
-    naam = input("Goedendag, wat is uw naam? Om anoniem te blijven vul in 'anoniem': ")
-    if(naam == "" or len(naam) > 30):
+    name = input("Goedendag, wat is uw naam? Om anoniem te blijven vul in 'anoniem': ")
+    if(name == "" or len(name) > 30):
         # sets username to anonymous if too short or too long
-        naam = "anoniem"
+        name = "anoniem"
 
     # calls review function
-    opmerking = opmerkingMaken()
+    review = giveReview()
 
     # get time at which the review has been made
-    datumTijd = time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime())
+    dateTime = time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime())
 
     # makes connection with the database
     file = open("postrgre_info.txt", "r")
     data = (file.read()).split(";")
     name = data[0]
-    ww = data[1]
-    connection = psycopg2.connect(user=name, password=ww, host="localhost", database="ProjectZuil")
+    password = data[1]
+    connection = psycopg2.connect(user=name, password=password, host="localhost", database="ProjectZuil")
     cursor = connection.cursor()
 
     # takes the next review id out of the database
     cursor.execute('select * from opmerking')
-    opmerkingnr = len(cursor.fetchall())
+    reviewnr = len(cursor.fetchall())
 
-    data = (opmerkingnr, opmerking, datumTijd, naam, station)
     # pushes data to the database
+    data = (reviewnr, review, dateTime, name, station)
     query = "INSERT INTO opmerking (opmerkingnr, opmerking, datumtijd, gebruikersnaam, stationnaam) VALUES (%s,%s,%s,%s,%s)"
     cursor.execute(query, data)
 
