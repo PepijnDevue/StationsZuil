@@ -12,8 +12,8 @@
 # imports
 import random
 import time
-import csv
 import os
+import psycopg2
 
 # list of possible locations
 locaties = ["Arnhem", "Utrecht", "Den Haag"]
@@ -50,12 +50,27 @@ while True:
     # get time at which the review has been made
     datumTijd = time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime())
 
-    # append review data to the CSV file
-    file = open('opmerkingen.csv', 'a')
-    writer = csv.writer(file)
-    data = [opmerking, datumTijd, naam, station]
-    writer.writerow(data)
-    file.close()
+    # makes connection with the database
+    file = open("postrgre_info.txt", "r")
+    data = (file.read()).split(";")
+    name = data[0]
+    ww = data[1]
+    connection = psycopg2.connect(user=name, password=ww, host="localhost", database="ProjectZuil")
+    cursor = connection.cursor()
+
+    # takes the next review id out of the database
+    cursor.execute('select * from opmerking')
+    opmerkingnr = len(cursor.fetchall())
+
+    data = (opmerkingnr, opmerking, datumTijd, naam, station)
+    # pushes data to the database
+    query = "INSERT INTO opmerking (opmerkingnr, opmerking, datumtijd, gebruikersnaam, stationnaam) VALUES (%s,%s,%s,%s,%s)"
+    cursor.execute(query, data)
+
+    # saves database queries and closes connection
+    connection.commit()
+    cursor.close()
+    connection.close()
 
     #   thank user, wait 5 seconds and clear CLI
     print("Bedankt voor uw feedback, we doen ons best om dagelijks te verbeteren, fijne dag!")

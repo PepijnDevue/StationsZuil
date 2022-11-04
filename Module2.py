@@ -10,13 +10,12 @@
 9.	Na het beoordelen van elke opmerking uit het csv bestand moet het gewist worden.
 """
 # imports
-import csv
 import os
 import time
 import psycopg2
 
 
-# function that checks wether the review has been accepted or rejected
+# function that checks whether the review has been accepted or rejected
 def goedkeuren():
     # gets input
     goedkeuring = input("Als het bericht goed wordt gekeurd, typ 'goedgekeurd', anders typ 'afgekeurd': ")
@@ -63,51 +62,44 @@ if itterations == 0 or duplicate == False:
 time.sleep(3)
 os.system("CLS")
 
-# opens CSV file and reads the review data
-file = open('opmerkingen.csv', 'r')
-reader = csv.reader(file)
-data = list(reader)
-file.close()
+# makes connection with the database
+connection = psycopg2.connect(user=name, password=ww, host="localhost", database="ProjectZuil")
+cursor = connection.cursor()
 
-#loops through the list of reviews
-for i in data:
-    if(i != []):
-        # shows the review on the screen and calls the moderating function
-        print("Het bericht wordt hieronder getoond \n\n'" + i[0] + "'\n")
-        goedgekeurd = goedkeuren()
+# get all unmoderated reviews from the database
+cursor.execute('select * from opmerking where goedgekeurd is null')
 
-        # confirm the moderators decision
-        if (goedgekeurd == True):
-            print("\nU heeft het bericht goedgekeurd")
-        else:
-            print("\nU heeft het bericht afgekeurd")
+approveList = cursor.fetchall()
 
-        # connect to the database
-        connection = psycopg2.connect(user=name, password=ww, host="localhost", database="ProjectZuil")
-        cursor = connection.cursor()
+# saves database queries and closes connection
+connection.commit()
+cursor.close()
+connection.close()
 
-        # takes the next review id out of the database
-        cursor.execute('select * from opmerking')
-        opmerkingnr = len(cursor.fetchall())
+for i in approveList:
+    # shows the review on the screen and calls the moderating function
+    print("Het bericht wordt hieronder getoond \n\n'" + i[2] + "'\n")
+    goedgekeurd = goedkeuren()
 
-        # puts all necesarry data in a tuple (reviewID, review, reviewdata, username, station, wether the review has been accepted or not, moderatingdate, moderatormail)
-        newData = (opmerkingnr, i[0], i[1], i[2], i[3], goedgekeurd, time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime()), modMail)
+    # confirm the moderators decision
+    if (goedgekeurd == True):
+        print("\nU heeft het bericht goedgekeurd")
+    else:
+        print("\nU heeft het bericht afgekeurd")
 
-        # pushes data to the database
-        query = "INSERT INTO opmerking (opmerkingnr, opmerking, datumtijd, gebruikersnaam, stationnaam, goedgekeurd, keurdatumtijd, mail) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
-        cursor.execute(query, newData)
+    dateTime = time.strftime('%a %d %b %Y, %H:%M:%S', time.localtime())
 
-        # saves database queries and closes connection
-        connection.commit()
-        cursor.close()
-        connection.close()
+    connection = psycopg2.connect(user=name, password=ww, host="localhost", database="ProjectZuil")
+    cursor = connection.cursor()
 
-        # waits 3 seconds and clear CLI
-        time.sleep(3)
-        os.system('CLS')
+    query = 'update opmerking set goedgekeurd = %s, keurdatumtijd = %s, mail = %s where opmerkingnr = %s'
+    cursor.execute(query, (goedgekeurd, dateTime, modMail, i[0]))
 
-# clears CSV file
-file = open('opmerkingen.csv', 'w')
-writer = csv.writer(file)
-writer.writerow([])
-file.close()
+    # saves database queries and closes connection
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    # waits 3 seconds and clear CLI
+    time.sleep(3)
+    os.system('CLS')
